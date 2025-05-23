@@ -1,0 +1,53 @@
+- name: sample print file
+  hosts: localhost
+  connection: local
+  vars:
+    url: www.prasaddevops.shop
+  tasks:
+    - name: print sample file
+      ansible.builtin.debug:
+        msg: This file is from ansible playbook url - {{url}}
+
+
+
+- name: task level var sample
+  hosts: localhost
+  connection: local
+
+  tasks:
+    - name: print sample file
+      ansible.builtin.debug:
+        msg: This file is from ansible playbook url - {{url}}
+      vars:
+        url: www.prasaddevops.shop
+
+
+
+- name: string level var sample
+  hosts: localhost
+  connection: local
+  vars:
+    x: 506132
+    y: 200
+    z: true
+  tasks:
+    - name: print string sample file
+      ansible.builtin.debug:
+        msg: x - {{x}}, y - {{y}}, z - {{z}}
+
+
+- name: var declaration sample
+  hosts: localhost
+  connection: local
+  vars:
+    x: 506132
+    y:
+      - 100
+      - 200
+    z:
+      domin: www.prasaddevops.shop
+      file: sample.yaml
+  tasks:
+    - name: print string sample file
+      ansible.builtin.debug:
+        msg: x - {{x}}, y - {{y[0]}}, z - {{z["domin"]}}

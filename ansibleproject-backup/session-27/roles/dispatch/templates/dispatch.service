@@ -1,0 +1,12 @@
+[Unit]
+Description = Dispatch Service
+[Service]
+User=roboshop
+Environment=AMQP_HOST="{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:AMQP_HOST token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+Environment=AMQP_USER="{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:AMQP_USER token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+Environment=AMQP_PASS="{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:AMQP_PASS token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+ExecStart=/app/dispatch
+SyslogIdentifier=dispatch
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,35 @@
+- name: install docker
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: docker
+
+- name: Create a container
+  community.docker.docker_container:
+    name: shipping
+    image: public.ecr.aws/w8x4g9h7/roboshop-v3/shipping
+    state: started
+    ports:
+      - "8080:8080"
+    env:
+      CART_ENDPOINT: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:CART_ENDPOINT token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+      DB_HOST: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:DB_HOST token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+
+
+#      docker run -e DB_TYPE=mysql -e APP_GIT_URL=https://github.com/roboshop-devops-project-v3/shipping -e DB_HOST=mysql-ip -e DB_USER=root -e DB_PASS=RoboShop@1 -e SCHEMA_FILE=db/app-user.sql public.ecr.aws/w8x4g9h7/roboshop-v3/schema-load
+
+- name: Run shipping schema
+  loop:
+    - app-user
+    - schema
+    - master-data
+  community.docker.docker_container:
+    name: shipping-{{ item }}
+    image: public.ecr.aws/w8x4g9h7/roboshop-v3/schema-load
+    state: started
+    env:
+      DB_TYPE: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:DB_TYPE token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+      APP_GIT_URL: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:APP_GIT_URL token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+      DB_HOST: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:DB_HOST token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+      DB_USER: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:DB_USER token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+      DB_PASS: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:DB_PASS token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+      SCHEMA_FILE: db/{{ item }}.sql

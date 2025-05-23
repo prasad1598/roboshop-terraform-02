@@ -1,0 +1,36 @@
+# cp rabbitmq.repo /etc/yum.repos.d/rabbitmq.repo
+# dnf install rabbitmq-server -y
+#
+# systemctl enable rabbitmq-server
+# systemctl start rabbitmq-server
+#
+# rabbitmqctl add_user roboshop roboshop123
+# rabbitmqctl set_permissions -p / roboshop ".*" ".*" ".*"
+#
+
+
+- name: Coping nginx config file
+  ansible.builtin.copy:
+    src: rabbitmq.repo
+    dest: /etc/yum.repos.d/rabbitmq.repo
+
+- name: Install rabbitmq-server
+  ansible.builtin.dnf:
+    name: rabbitmq-server
+    state: latest
+
+- name: Start & enable service
+  ansible.builtin.systemd_service:
+    name: rabbitmq-server
+    state: started
+    enabled: yes
+
+- name: create app user
+  community.rabbitmq.rabbitmq_user:
+    user: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:user token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+    password: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:password token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+    vhost: /
+    configure_priv: .*
+    read_priv: .*
+    write_priv: .*
+    state: present

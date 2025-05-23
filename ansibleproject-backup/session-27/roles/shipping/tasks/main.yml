@@ -1,0 +1,39 @@
+#java
+#
+#dnf install mysql -y
+#mysql -h mysql-dev.prasaddevops.shop -uroot -pRoboShop@1 < /app/db/schema.sql
+#mysql -h mysql-dev.prasaddevops.shop -uroot -pRoboShop@1 < /app/db/app-user.sql
+#mysql -h mysql-dev.prasaddevops.shop -uroot -pRoboShop@1 < /app/db/master-data.sql
+#
+#systemd_setup
+
+- name: Run Java
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: java
+
+- name: Install Mysql package
+  ansible.builtin.dnf:
+    name: mysql
+    state: present
+
+#- name: Load Schema
+#  ansible.builtin.shell: mysql -h mysql-dev.prasaddevops.shop -uroot -pRoboShop@1 < /app/db/schema.sql
+#
+#- name: Load app-user
+#  ansible.builtin.shell: mysql -h mysql-dev.prasaddevops.shop -uroot -pRoboShop@1 < /app/db/app-user.sql
+#
+#- name: Load master-data
+#  ansible.builtin.shell: mysql -h mysql-dev.prasaddevops.shop -uroot -pRoboShop@1 < /app/db/master-data.sql
+
+- name: Load DB
+  ansible.builtin.shell: mysql -h {{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:DB_HOST token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }} -u{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:user token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }} -p"{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:password token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}" < /app/db/{{ item }}.sql
+  loop:
+    - schema
+    - app-user
+    - master-data
+
+- name: Run systemd
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: systemd_setup

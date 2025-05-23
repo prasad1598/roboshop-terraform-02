@@ -1,0 +1,20 @@
+- name: install docker
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: docker
+
+- name: Create a container
+  community.docker.docker_container:
+    name: payment
+    image: public.ecr.aws/w8x4g9h7/roboshop-v3/payment
+    state: started
+    ports:
+      - "8080:8080"
+
+    env:
+      CART_HOST: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:CART_HOST token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+      CART_PORT: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:CART_PORT token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+      USER_HOST: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:USER_HOST token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+      USER_PORT: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:USER_PORT token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+      AMQP_USER: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:AMQP_USER token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+      AMQP_PASS: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:AMQP_PASS token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"

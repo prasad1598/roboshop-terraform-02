@@ -1,0 +1,34 @@
+# component_name=catalogue
+# source common.sh
+
+# nodejs
+
+# systemd_setup
+
+# cp ${pwd}/mongo.repo /etc/yum.repos.d/mongo.repo
+# dnf install mongodb-mongosh -y
+# mongosh --host mongodb-dev.prasaddevops.shop </app/db/master-data.js
+
+
+- name: Run Nodejs
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: nodejs
+
+- name: Run Systemd_setup
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: systemd_setup
+
+- name: Copy mongodb repo file
+  ansible.builtin.copy:
+    src: mongo.repo
+    dest: /etc/yum.repos.d/mongo.repo
+
+- name: install mongodb
+  ansible.builtin.dnf:
+    name: mongodb-mongosh
+    state: present
+
+- name: Load master data
+  ansible.builtin.shell: mongosh --host mongodb-dev.prasaddevops.shop </app/db/master-data.js

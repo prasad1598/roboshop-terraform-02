@@ -1,0 +1,8 @@
+- name: learn ansible-conditions
+  hosts: localhost
+  become: yes
+  connection: local
+  tasks:
+    - name: print a message
+      ansible.builtin.debug:
+        msg:

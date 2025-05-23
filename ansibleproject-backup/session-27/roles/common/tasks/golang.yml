@@ -1,0 +1,15 @@
+#  golang() {
+#    dnf install golang -y
+#    cp ${pwd}/${component_name}.service /etc/systemd/system/${component_name}.service
+#  }
+
+
+- name: Install golany
+  ansible.builtin.dnf:
+    name: golang
+    state: present
+
+- name: Copy service file
+  ansible.builtin.template:
+    src: "{{ app_name }}.service"
+    dest: /etc/systemd/system/{{ app_name }}.service

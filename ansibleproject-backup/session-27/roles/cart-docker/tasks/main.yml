@@ -1,0 +1,17 @@
+- name: install docker
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: docker
+
+- name: Create a container
+  community.docker.docker_container:
+    name: cart
+    image: public.ecr.aws/w8x4g9h7/roboshop-v3/cart
+    state: started
+    ports:
+      - "8080:8080"
+
+    env:
+      CATALOGUE_HOST: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:CATALOGUE_HOST token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+      CATALOGUE_PORT: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:CATALOGUE_PORT token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
+      REDIS_HOST: "{{ lookup('community.hashi_vault.hashi_vault', 'secret=roboshop-infra/data/{{ app_name }}:REDIS_HOST token={{ token }} url=http://vault-int.prasaddevops.shop:8200') }}"
